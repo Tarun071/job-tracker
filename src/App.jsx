@@ -94,9 +94,9 @@ export default function App() {
       );
     }
 
-    if (currentPage === "about") {
-      return <AboutPage />;
-    }
+    // if (currentPage === "about") {
+    //   return <AboutPage />;
+    // }
 
     return (
       <HomePage

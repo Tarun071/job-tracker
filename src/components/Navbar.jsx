@@ -11,7 +11,7 @@ export default function Navbar({ currentPage, onNavigate }) {
   const links = [
     { id: "home",  label: "Dashboard" },
     { id: "add",   label: "Add Job"   },
-    { id: "about", label: "About"     },
+    // { id: "about", label: "About"     },
   ];
 
   return (
