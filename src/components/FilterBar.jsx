@@ -28,7 +28,7 @@ export default function FilterBar({ search, onSearch, activeFilter, onFilter }) 
         type="text"
         value={search}
         onChange={(e) => onSearch(e.target.value)}
-        placeholder="🔍  Search company, role, location..."
+        placeholder="Search company, role, location"
         style={{
           flex: 1,
           minWidth: 200,

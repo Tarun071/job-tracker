@@ -8,22 +8,22 @@ export default function AboutPage() {
   // Info cards to show on the page
   const features = [
     {
-      icon: "📋",
+      icon: "",
       title: "Track Applications",
       desc: "Store every job you apply to — company, role, location, and date.",
     },
     {
-      icon: "🏷️",
+      icon: "",
       title: "Status Labels",
       desc: "Mark each job as Applied, Interview, Offer, or Rejected.",
     },
     {
-      icon: "🔍",
+      icon: "",
       title: "Search & Filter",
       desc: "Quickly find jobs by name or filter by current status.",
     },
     {
-      icon: "✏️",
+      icon: "",
       title: "Edit & Delete",
       desc: "Update any application or remove ones you no longer need.",
     },
@@ -78,7 +78,7 @@ export default function AboutPage() {
         padding: "16px 20px",
       }}>
         <div style={{ fontWeight: 700, fontSize: 13, color: "#0369a1", marginBottom: 6 }}>
-          🛠️ Built with
+          Built with
         </div>
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#0369a1", lineHeight: 2 }}>
           <li>React (useState, props, component composition)</li>

@@ -154,7 +154,7 @@ export default function AddJobPage({ onAdd, onNavigate }) {
               style={inputStyle}
               value={form.jobLink}
               onChange={(e) => handleChange("jobLink", e.target.value)}
-              placeholder="https://..."
+              placeholder="e.g. Linkedin, Well found, naukari..."
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function AddJobPage({ onAdd, onNavigate }) {
                 fontSize: 14, fontWeight: 700,
               }}
             >
-              Add Job ✓
+              Add Job 
             </button>
           </div>
         </div>

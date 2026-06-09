@@ -2,18 +2,31 @@
 //  components/JobCard.jsx
 //  Displays one job application as a card
 //  Props:
-//    job    (object)   — single job data object
-//    onEdit (function) — called when Edit clicked
+//    job      (object)   — single job data object
+//    onEdit   (function) — called when Edit clicked
 //    onDelete (function) — called when Delete clicked
 // ─────────────────────────────────────────────
 
+import { useDispatch, useSelector } from "react-redux";
+import { addFavorite, removeFavorite, selectIsFavorite } from "../store/favoritesSlice";
 import Badge from "./Badge";
 
 export default function JobCard({ job, onEdit, onDelete }) {
+  const dispatch    = useDispatch();
+  const isFavorite  = useSelector(selectIsFavorite(job.id));
+
+  function handleFavoriteToggle() {
+    if (isFavorite) {
+      dispatch(removeFavorite(job.id));
+    } else {
+      dispatch(addFavorite(job));
+    }
+  }
+
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #e5e7eb",
+      background: "#fdfdfd",
+      border: "1px solid #6f89be",
       borderRadius: 14,
       padding: "16px 18px",
       display: "flex",
@@ -22,7 +35,7 @@ export default function JobCard({ job, onEdit, onDelete }) {
       transition: "box-shadow 0.15s",
     }}>
 
-      {/* ── Top row: company name + badge ── */}
+      {/* ── Top row: company name + badge + favorite ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>
@@ -32,17 +45,35 @@ export default function JobCard({ job, onEdit, onDelete }) {
             {job.role}
           </div>
         </div>
-        <Badge status={job.status} />
+
+        {/* Badge + Favorite star side by side */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Badge status={job.status} />
+          <button
+            onClick={handleFavoriteToggle}
+            title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 18,
+              lineHeight: 1,
+              padding: "2px 4px",
+              color: isFavorite ? "#f59e0b" : "#d1d5db",
+              transition: "color 0.15s, transform 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.25)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+          >
+            {isFavorite ? "★" : "☆"}
+          </button>
+        </div>
       </div>
 
       {/* ── Meta row: location + date ── */}
       <div style={{ display: "flex", gap: 14, fontSize: 12, color: "#9ca3af", flexWrap: "wrap" }}>
-        {job.location && (
-          <span>📍 {job.location}</span>
-        )}
-        {job.dateApplied && (
-          <span>📅 {job.dateApplied}</span>
-        )}
+        {job.location && <span>{job.location}</span>}
+        {job.dateApplied && <span>{job.dateApplied}</span>}
       </div>
 
       {/* ── Notes (only if present) ── */}
@@ -68,7 +99,7 @@ export default function JobCard({ job, onEdit, onDelete }) {
           rel="noreferrer"
           style={{ fontSize: 12, color: "#2563eb", textDecoration: "none" }}
         >
-          🔗 View Job Posting
+          Website applied
         </a>
       )}
 
@@ -88,7 +119,7 @@ export default function JobCard({ job, onEdit, onDelete }) {
             fontWeight: 500,
           }}
         >
-          ✏️ Edit
+          Edit
         </button>
         <button
           onClick={() => onDelete(job.id)}
@@ -104,7 +135,7 @@ export default function JobCard({ job, onEdit, onDelete }) {
             fontWeight: 500,
           }}
         >
-          🗑️ Delete
+          Delete
         </button>
       </div>
     </div>

@@ -40,7 +40,7 @@ export default function Navbar({ currentPage, onNavigate }) {
           gap: 8,
         }}
       >
-        💼 JobTrackr
+        JobTrackr
       </div>
 
       {/* ── Nav links ── */}

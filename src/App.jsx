@@ -8,13 +8,16 @@ import { useState } from "react";
 import jobsData from "./data/jobs";
 
 // ── Components ──
-import Navbar        from "./components/Navbar";
-import JobFormModal  from "./components/JobFormModal";
+import Navbar       from "./components/Navbar";
+import JobFormModal from "./components/JobFormModal";
 
 // ── Pages ──
-import HomePage   from "./pages/HomePage";
-import AddJobPage from "./pages/AddJobPage";
-import AboutPage  from "./pages/AboutPage";
+import LoginPage    from "./pages/LoginPage";
+import Favorites from "./pages/Favorites";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage     from "./pages/HomePage";
+import AddJobPage   from "./pages/AddJobPage";
+import AboutPage    from "./pages/AboutPage";
 
 const EMPTY_FORM = {
   company:     "",
@@ -27,16 +30,38 @@ const EMPTY_FORM = {
 };
 
 export default function App() {
-  // ── State ──
+  // ── Auth state ──
+  const [currentUser, setCurrentUser] = useState(null);       // null = not logged in
+  const [authPage,    setAuthPage]    = useState("login");     // "login" | "register"
+
+  // ── App state ──
   const [jobs, setJobs]        = useState(jobsData);
   const [currentPage, setPage] = useState("home");
 
-  // Edit modal state
+  // ── Edit modal state ──
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm]           = useState(EMPTY_FORM);
-  const [editId, setEditId]               = useState(null);
+  const [editId,   setEditId]             = useState(null);
 
-  // ── Handlers ──
+  // ── Auth handlers ──
+
+  function handleLoginSuccess(user) {
+    setCurrentUser(user);
+    setPage("home");
+  }
+
+  function handleRegisterSuccess(user) {
+    setCurrentUser(user);   // auto-login after register
+    setPage("home");
+  }
+
+  function handleLogout() {
+    setCurrentUser(null);
+    setAuthPage("login");
+    setPage("home");
+  }
+
+  // ── Job handlers ──
 
   function handleAddJob(newJob) {
     setJobs((prev) => [newJob, ...prev]);
@@ -84,6 +109,9 @@ export default function App() {
         />
       );
     }
+    if (currentPage === "favorites") {
+  return <Favorites onEdit={handleEditOpen} onDelete={handleDelete} />;
+}
 
     if (currentPage === "add") {
       return (
@@ -94,9 +122,9 @@ export default function App() {
       );
     }
 
-    // if (currentPage === "about") {
-    //   return <AboutPage />;
-    // }
+    if (currentPage === "about") {
+      return <AboutPage />;
+    }
 
     return (
       <HomePage
@@ -108,10 +136,37 @@ export default function App() {
     );
   }
 
-  // ── Render ──
+  // ─────────────────────────────────────────
+  //  Not logged in → show Login or Register
+  // ─────────────────────────────────────────
+  if (!currentUser) {
+    if (authPage === "register") {
+      return (
+        <RegisterPage
+          onRegisterSuccess={handleRegisterSuccess}
+          onGoLogin={() => setAuthPage("login")}
+        />
+      );
+    }
+    return (
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        onGoRegister={() => setAuthPage("register")}
+      />
+    );
+  }
+
+  // ─────────────────────────────────────────
+  //  Logged in → show full app
+  // ─────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Segoe UI', sans-serif" }}>
-      <Navbar currentPage={currentPage} onNavigate={setPage} />
+    <div style={{ minHeight: "100vh", background: "#0f172a", fontFamily: "'Segoe UI', sans-serif" }}>
+      <Navbar
+        currentPage={currentPage}
+        onNavigate={setPage}
+        user={currentUser}
+        onLogout={handleLogout}
+      />
       {renderPage()}
 
       {editModalOpen && (

@@ -23,7 +23,7 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
   });
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px", backgroundColor: "#111827"  }}>
 
       {/* ── Page heading + Add Job button ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
@@ -32,11 +32,11 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
             Dashboard
           </h1>
           <p style={{ margin: "5px 0 0", fontSize: 13, color: "#6b7280" }}>
-            {jobs.length} total applications
+            {jobs.length} applications
           </p>
         </div>
 
-        <button
+        {/* <button
           onClick={() => onNavigate("add")}
           style={{
             background: "#1d4ed8",
@@ -50,7 +50,7 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
           }}
         >
           + Add Job
-        </button>
+        </button> */}
       </div>
 
       {/* ── Stats bar ── */}

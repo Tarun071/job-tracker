@@ -66,7 +66,7 @@ export default function JobFormModal({ form, setForm, onSave, onClose, isEditing
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#111827" }}>
-            {isEditing ? "✏️ Edit Application" : "➕ Add Application"}
+            {isEditing ? "Edit Application" : "Add Application"}
           </h2>
           <button
             onClick={onClose}
@@ -144,7 +144,7 @@ export default function JobFormModal({ form, setForm, onSave, onClose, isEditing
               style={inputStyle}
               value={form.jobLink}
               onChange={(e) => handleChange("jobLink", e.target.value)}
-              placeholder="https://..."
+              placeholder="Linkedin, wellfound, naukri"
             />
           </div>
 
