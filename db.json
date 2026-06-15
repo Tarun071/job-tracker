@@ -21,9 +21,7 @@
       "password": "000000",
       "id": "ozLmAHDf89I"
     }
-    {
-      
-    }
   ],
+  "jobs": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

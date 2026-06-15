@@ -10,22 +10,35 @@ import JobCard     from "../components/JobCard";
 export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
   const [search, setSearch]             = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [sortBy, setSortBy]             = useState("newest");   // ← NEW
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesStatus = activeFilter === "All" || job.status === activeFilter;
-    const q = search.toLowerCase();
-    const matchesSearch =
-      !q ||
-      job.company.toLowerCase().includes(q)  ||
-      job.role.toLowerCase().includes(q)     ||
-      job.location.toLowerCase().includes(q);
-    return matchesStatus && matchesSearch;
-  });
+  // ── Sort logic ──
+  function getSortedJobs(jobList) {
+    const sorted = [...jobList];
+    if (sortBy === "newest")  return sorted.sort((a, b) => new Date(b.dateApplied) - new Date(a.dateApplied));
+    if (sortBy === "oldest")  return sorted.sort((a, b) => new Date(a.dateApplied) - new Date(b.dateApplied));
+    if (sortBy === "company") return sorted.sort((a, b) => a.company.localeCompare(b.company));
+    if (sortBy === "status")  return sorted.sort((a, b) => a.status.localeCompare(b.status));
+    return sorted;
+  }
+
+  const filteredJobs = getSortedJobs(
+    jobs.filter((job) => {
+      const matchesStatus = activeFilter === "All" || job.status === activeFilter;
+      const q = search.toLowerCase();
+      const matchesSearch =
+        !q ||
+        job.company.toLowerCase().includes(q)  ||
+        job.role.toLowerCase().includes(q)     ||
+        job.location.toLowerCase().includes(q);
+      return matchesStatus && matchesSearch;
+    })
+  );
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px", backgroundColor: "#111827"  }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px", backgroundColor: "#111827" }}>
 
-      {/* ── Page heading + Add Job button ── */}
+      {/* ── Page heading ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#111827" }}>
@@ -35,22 +48,6 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
             {jobs.length} applications
           </p>
         </div>
-
-        {/* <button
-          onClick={() => onNavigate("add")}
-          style={{
-            background: "#1d4ed8",
-            color: "#fff",
-            border: "none",
-            borderRadius: 9,
-            padding: "10px 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          + Add Job
-        </button> */}
       </div>
 
       {/* ── Stats bar ── */}
@@ -63,6 +60,29 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
         activeFilter={activeFilter}
         onFilter={setActiveFilter}
       />
+
+      {/* ── Sort dropdown ── */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          style={{
+            background: "#1e2a3a",
+            color: "#94a3b8",
+            border: "1px solid #2d3f55",
+            borderRadius: 8,
+            padding: "7px 12px",
+            fontSize: 13,
+            cursor: "pointer",
+            outline: "none",
+          }}
+        >
+          <option value="newest">📅 Newest First</option>
+          <option value="oldest">📅 Oldest First</option>
+          <option value="company">🔤 Company (A–Z)</option>
+          <option value="status">🏷️ Status</option>
+        </select>
+      </div>
 
       {/* ── Job cards grid ── */}
       {filteredJobs.length === 0 ? (

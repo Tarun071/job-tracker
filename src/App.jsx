@@ -2,7 +2,7 @@
 //  App.jsx  ← Root component
 // ─────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useEffect } from "react";   // ← added useEffect
 
 // ── Data ──
 import jobsData from "./data/jobs";
@@ -13,7 +13,7 @@ import JobFormModal from "./components/JobFormModal";
 
 // ── Pages ──
 import LoginPage    from "./pages/LoginPage";
-import Favorites from "./pages/Favorites";
+import Favorites    from "./pages/Favorites";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage     from "./pages/HomePage";
 import AddJobPage   from "./pages/AddJobPage";
@@ -31,12 +31,21 @@ const EMPTY_FORM = {
 
 export default function App() {
   // ── Auth state ──
-  const [currentUser, setCurrentUser] = useState(null);       // null = not logged in
-  const [authPage,    setAuthPage]    = useState("login");     // "login" | "register"
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authPage,    setAuthPage]    = useState("login");
 
-  // ── App state ──
-  const [jobs, setJobs]        = useState(jobsData);
+  // ── App state ── (loads from localStorage on first render)
+  const [jobs, setJobs] = useState(() => {
+    const saved = localStorage.getItem("jobs");
+    return saved ? JSON.parse(saved) : jobsData;
+  });
+
   const [currentPage, setPage] = useState("home");
+
+  // ── Persist jobs to localStorage whenever they change ──
+  useEffect(() => {
+    localStorage.setItem("jobs", JSON.stringify(jobs));
+  }, [jobs]);
 
   // ── Edit modal state ──
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -51,7 +60,7 @@ export default function App() {
   }
 
   function handleRegisterSuccess(user) {
-    setCurrentUser(user);   // auto-login after register
+    setCurrentUser(user);
     setPage("home");
   }
 
@@ -109,9 +118,10 @@ export default function App() {
         />
       );
     }
+
     if (currentPage === "favorites") {
-  return <Favorites onEdit={handleEditOpen} onDelete={handleDelete} />;
-}
+      return <Favorites onEdit={handleEditOpen} onDelete={handleDelete} />;
+    }
 
     if (currentPage === "add") {
       return (
