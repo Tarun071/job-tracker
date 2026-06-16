@@ -2,10 +2,10 @@
 //  App.jsx  ← Root component
 // ─────────────────────────────────────────────
 
-import { useState, useEffect } from "react";   // ← added useEffect
+import { useState, useEffect } from "react";
 
-// ── Data ──
-import jobsData from "./data/jobs";
+// ── API ──
+import { fetchJobs, deleteJob, updateJob } from "./services/api";
 
 // ── Components ──
 import Navbar       from "./components/Navbar";
@@ -34,23 +34,25 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authPage,    setAuthPage]    = useState("login");
 
-  // ── App state ── (loads from localStorage on first render)
-  const [jobs, setJobs] = useState(() => {
-    const saved = localStorage.getItem("jobs");
-    return saved ? JSON.parse(saved) : jobsData;
-  });
-
-  const [currentPage, setPage] = useState("home");
-
-  // ── Persist jobs to localStorage whenever they change ──
-  useEffect(() => {
-    localStorage.setItem("jobs", JSON.stringify(jobs));
-  }, [jobs]);
+  // ── App state ──
+  const [jobs,        setJobs]        = useState([]);
+  const [currentPage, setPage]        = useState("home");
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   // ── Edit modal state ──
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editForm, setEditForm]           = useState(EMPTY_FORM);
-  const [editId,   setEditId]             = useState(null);
+  const [editForm,      setEditForm]      = useState(EMPTY_FORM);
+  const [editId,        setEditId]        = useState(null);
+
+  // ── Load jobs from backend when user logs in ──
+  useEffect(() => {
+    if (!currentUser) return;
+    setLoadingJobs(true);
+    fetchJobs()
+      .then(setJobs)
+      .catch(console.error)
+      .finally(() => setLoadingJobs(false));
+  }, [currentUser]);
 
   // ── Auth handlers ──
 
@@ -67,13 +69,15 @@ export default function App() {
   function handleLogout() {
     setCurrentUser(null);
     setAuthPage("login");
+    setJobs([]);
     setPage("home");
   }
 
   // ── Job handlers ──
 
-  function handleAddJob(newJob) {
-    setJobs((prev) => [newJob, ...prev]);
+  function handleAddJob(savedJob) {
+    // savedJob comes from backend with real id
+    setJobs((prev) => [savedJob, ...prev]);
   }
 
   function handleEditOpen(job) {
@@ -90,24 +94,40 @@ export default function App() {
     setEditModalOpen(true);
   }
 
-  function handleEditSave() {
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === editId ? { ...job, ...editForm } : job
-      )
-    );
-    setEditModalOpen(false);
+  async function handleEditSave() {
+    try {
+      const updated = await updateJob(editId, editForm);
+      setJobs((prev) =>
+        prev.map((job) => job.id === editId ? updated : job)
+      );
+      setEditModalOpen(false);
+    } catch (err) {
+      alert("Failed to update job. Please try again.");
+    }
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     const confirmed = window.confirm("Delete this application?");
     if (confirmed) {
-      setJobs((prev) => prev.filter((job) => job.id !== id));
+      try {
+        await deleteJob(id);
+        setJobs((prev) => prev.filter((job) => job.id !== id));
+      } catch (err) {
+        alert("Failed to delete job. Please try again.");
+      }
     }
   }
 
   // ── Page renderer ──
   function renderPage() {
+    if (loadingJobs) {
+      return (
+        <div style={{ textAlign: "center", padding: "80px 20px", color: "#94a3b8", fontSize: 15 }}>
+          Loading your jobs...
+        </div>
+      );
+    }
+
     if (currentPage === "home") {
       return (
         <HomePage

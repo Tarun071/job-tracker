@@ -1,13 +1,9 @@
 // ─────────────────────────────────────────────
 //  pages/LoginPage.jsx
-//
-//  Calls api.js directly — no authApi.js
-//  GET /users?username=xxx  → check user exists
-//  Then checks password manually
 // ─────────────────────────────────────────────
 
 import { useState } from "react";
-import api from "../services/api";
+import { loginUser } from "../services/api";
 
 export default function LoginPage({ onLoginSuccess, onGoRegister }) {
   const [username, setUsername] = useState("");
@@ -26,33 +22,12 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }) {
     setError("");
 
     try {
-      // GET /users?username=tarun  → json-server filters db.json
-      const response = await api.get("/users", {
-        params: { username: username.trim().toLowerCase() },
-      });
-
-      const users = response.data;
-
-      if (users.length === 0) {
-        setError("Username not found.");
-        setLoading(false);
-        return;
-      }
-
-      const user = users[0];
-
-      if (user.password !== password) {
-        setError("Incorrect password.");
-        setLoading(false);
-        return;
-      }
-
+      const user = await loginUser(username.trim().toLowerCase(), password);
       // Remove password before passing user up
       const { password: _removed, ...safeUser } = user;
       onLoginSuccess(safeUser);
-
     } catch (err) {
-      setError("Cannot connect. Is json-server running?");
+      setError(err.message || "Cannot connect to server.");
     }
 
     setLoading(false);
@@ -82,9 +57,6 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }) {
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ fontSize: 40, marginBottom: 10 }}>💼</div>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#0f172a" }}>JobTrackr</h1>
-          {/* <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>
-            Sign in to manage your applications
-          </p> */}
         </div>
 
         {/* Card */}
@@ -105,7 +77,7 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }) {
                 USERNAME
               </label>
               <input
-                style={inputStyle} type="text" 
+                style={inputStyle} type="text"
                 value={username} onChange={(e) => setUsername(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
@@ -129,7 +101,7 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }) {
                   background: "none", border: "none",
                   cursor: "pointer", fontSize: 16, color: "black",
                 }}>
-                  {showPass}
+                  {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
             </div>
@@ -165,15 +137,6 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }) {
             </p>
           </div>
         </div>
-
-        {/* Demo hint
-        <div style={{
-          marginTop: 16, background: "#f0f9ff", border: "1px solid #bae6fd",
-          borderRadius: 10, padding: "12px 16px",
-          fontSize: 12, color: "#0369a1", lineHeight: 1.8,
-        }}>
-          <strong>Demo:</strong> username <code>tarun</code> / password <code>tarun123</code>
-        </div> */}
       </div>
     </div>
   );

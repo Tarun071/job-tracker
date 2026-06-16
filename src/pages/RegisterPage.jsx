@@ -1,14 +1,9 @@
 // ─────────────────────────────────────────────
 //  pages/RegisterPage.jsx
-//
-//  Calls api.js directly — no authApi.js
-//  GET /users?username=xxx  → check if taken
-//  GET /users?email=xxx     → check if taken
-//  POST /users              → add to db.json
 // ─────────────────────────────────────────────
 
 import { useState } from "react";
-import api from "../services/api";
+import { registerUser } from "../services/api";
 
 export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
   const [form, setForm] = useState({
@@ -45,28 +40,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
     setError("");
 
     try {
-      // Check if username already taken
-      const usernameCheck = await api.get("/users", {
-        params: { username: form.username.trim().toLowerCase() },
-      });
-      if (usernameCheck.data.length > 0) {
-        setError("Username already taken. Choose another.");
-        setLoading(false);
-        return;
-      }
-
-      // Check if email already registered
-      const emailCheck = await api.get("/users", {
-        params: { email: form.email.trim().toLowerCase() },
-      });
-      if (emailCheck.data.length > 0) {
-        setError("Email already registered.");
-        setLoading(false);
-        return;
-      }
-
-      // POST /users → json-server writes new user into db.json
-      const response = await api.post("/users", {
+      const newUser = await registerUser({
         name:     form.name.trim(),
         username: form.username.trim().toLowerCase(),
         email:    form.email.trim().toLowerCase(),
@@ -74,11 +48,11 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
       });
 
       // Auto-login — remove password before passing up
-      const { password: _removed, ...safeUser } = response.data;
+      const { password: _removed, ...safeUser } = newUser;
       onRegisterSuccess(safeUser);
 
     } catch (err) {
-      setError("Cannot connect. Is json-server running?");
+      setError(err.message || "Cannot connect to server.");
     }
 
     setLoading(false);
@@ -134,7 +108,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
             <div>
               <label style={labelStyle}>FULL NAME</label>
               <input
-                style={inputStyle} type="text" 
+                style={inputStyle} type="text"
                 value={form.name} onChange={(e) => handleChange("name", e.target.value)}
                 onKeyDown={handleKeyDown}
               />
@@ -144,7 +118,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
             <div>
               <label style={labelStyle}>USERNAME</label>
               <input
-                style={inputStyle} type="text" 
+                style={inputStyle} type="text"
                 value={form.username} onChange={(e) => handleChange("username", e.target.value)}
                 onKeyDown={handleKeyDown}
               />
@@ -154,7 +128,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
             <div>
               <label style={labelStyle}>EMAIL</label>
               <input
-                style={inputStyle} type="email" 
+                style={inputStyle} type="email"
                 value={form.email} onChange={(e) => handleChange("email", e.target.value)}
                 onKeyDown={handleKeyDown}
               />
@@ -176,7 +150,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
                   background: "none", border: "none",
                   cursor: "pointer", fontSize: 16, color: "#9ca3af",
                 }}>
-                  {/* {showPass ? "🙈" : "👁️"} */}
+                  {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
             </div>
@@ -190,7 +164,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
                   borderColor: form.confirmPassword && form.confirmPassword !== form.password
                     ? "#fca5a5" : "#d1d5db",
                 }}
-                type="password" 
+                type="password"
                 value={form.confirmPassword}
                 onChange={(e) => handleChange("confirmPassword", e.target.value)}
                 onKeyDown={handleKeyDown}
