@@ -1,44 +1,38 @@
-// ─────────────────────────────────────────────
-//  pages/AddJobPage.jsx
-// ─────────────────────────────────────────────
-
+// src/pages/AddJobPage.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { STATUS_OPTIONS } from "../data/jobs";
-import { addJob } from "../services/api";
+import api from "../services/api";
 
 const EMPTY_FORM = {
-  company:     "",
-  role:        "",
-  location:    "",
-  status:      "Applied",
-  dateApplied: "",
-  jobLink:     "",
-  notes:       "",
+  company: "", role: "", location: "",
+  status: "Applied", dateApplied: "", jobLink: "", notes: "",
 };
 
-export default function AddJobPage({ onAdd, onNavigate }) {
+function AddJobPage({ onAdd }) {
+  const navigate  = useNavigate();
   const [form,    setForm]    = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
   const isValid = form.company.trim() !== "" && form.role.trim() !== "";
 
-  function handleChange(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault();
     if (!isValid) return;
 
     setLoading(true);
     setError("");
 
     try {
-      // POST to Render backend — json-server assigns the id automatically
-      const savedJob = await addJob(form);
-      onAdd(savedJob);        // pass saved job (with real id) to App
+      const response = await api.post("/jobs", form);
+      onAdd(response.data);
       setForm(EMPTY_FORM);
-      onNavigate("home");
+      navigate("/");
     } catch (err) {
       setError("Failed to save job. Please try again.");
     }
@@ -60,138 +54,75 @@ export default function AddJobPage({ onAdd, onNavigate }) {
   };
 
   return (
-    <div style={{ maxWidth: 540, margin: "0 auto", padding: "32px 20px" }}>
+    <div className="add-job-page">
+      <h1 className="add-job-page__title">Add New Application</h1>
+      <p className="add-job-page__subtitle">Fields marked * are required.</p>
 
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 700, color: "#111827" }}>
-        Add New Application
-      </h1>
-      <p style={{ margin: "0 0 28px", fontSize: 13, color: "#6b7280" }}>
-        Fill in the details below. Fields marked * are required.
-      </p>
+      <div className="add-job-page__card">
+        <form onSubmit={handleSubmit} className="add-job-page__fields">
 
-      <div style={{
-        background: "#fff", border: "1px solid #e5e7eb",
-        borderRadius: 16, padding: 28,
-      }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Company */}
           <div>
             <label style={labelStyle}>Company *</label>
-            <input
-              style={inputStyle} value={form.company}
-              onChange={(e) => handleChange("company", e.target.value)}
-              placeholder="e.g. Google"
-            />
+            <input style={inputStyle} name="company" value={form.company}
+              onChange={handleChange} placeholder="e.g. Google" />
           </div>
 
-          {/* Role */}
           <div>
             <label style={labelStyle}>Role *</label>
-            <input
-              style={inputStyle} value={form.role}
-              onChange={(e) => handleChange("role", e.target.value)}
-              placeholder="e.g. Software Developer"
-            />
+            <input style={inputStyle} name="role" value={form.role}
+              onChange={handleChange} placeholder="e.g. Software Developer" />
           </div>
 
-          {/* Location */}
           <div>
             <label style={labelStyle}>Location</label>
-            <input
-              style={inputStyle} value={form.location}
-              onChange={(e) => handleChange("location", e.target.value)}
-              placeholder="e.g. Hyderabad"
-            />
+            <input style={inputStyle} name="location" value={form.location}
+              onChange={handleChange} placeholder="e.g. Hyderabad" />
           </div>
 
-          {/* Status */}
           <div>
             <label style={labelStyle}>Status</label>
-            <select
-              style={{ ...inputStyle, cursor: "pointer" }}
-              value={form.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+            <select style={{ ...inputStyle, cursor: "pointer" }} name="status"
+              value={form.status} onChange={handleChange}>
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
-          {/* Date */}
           <div>
             <label style={labelStyle}>Date Applied</label>
-            <input
-              type="date" style={inputStyle}
-              value={form.dateApplied}
-              onChange={(e) => handleChange("dateApplied", e.target.value)}
-            />
+            <input type="date" style={inputStyle} name="dateApplied"
+              value={form.dateApplied} onChange={handleChange} />
           </div>
 
-          {/* Job Link */}
           <div>
             <label style={labelStyle}>Job Posting Link</label>
-            <input
-              style={inputStyle} value={form.jobLink}
-              onChange={(e) => handleChange("jobLink", e.target.value)}
-              placeholder="e.g. LinkedIn, Wellfound, Naukri..."
-            />
+            <input style={inputStyle} name="jobLink" value={form.jobLink}
+              onChange={handleChange} placeholder="e.g. LinkedIn, Naukri..." />
           </div>
 
-          {/* Notes */}
           <div>
             <label style={labelStyle}>Notes</label>
-            <textarea
-              style={{ ...inputStyle, resize: "vertical", minHeight: 80, lineHeight: 1.6 }}
-              value={form.notes}
-              onChange={(e) => handleChange("notes", e.target.value)}
-              placeholder="Referral? Round 1 done? Salary info..."
-            />
+            <textarea style={{ ...inputStyle, resize: "vertical", minHeight: 80, lineHeight: 1.6 }}
+              name="notes" value={form.notes} onChange={handleChange}
+              placeholder="Referral? Round 1 done? Salary info..." />
           </div>
 
-          {/* Error */}
-          {error && (
-            <div style={{
-              background: "#fef2f2", border: "1px solid #fecaca",
-              borderRadius: 8, padding: "9px 13px",
-              fontSize: 13, color: "#dc2626",
-            }}>
-              {error}
-            </div>
-          )}
+          {error && <div className="add-job-page__error">{error}</div>}
 
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-            <button
-              onClick={() => onNavigate("home")}
-              style={{
-                flex: 1, padding: "11px 0", borderRadius: 9,
-                cursor: "pointer", background: "transparent",
-                border: "1px solid #d1d5db",
-                color: "#6b7280", fontSize: 14, fontWeight: 500,
-              }}
-            >
+          <div className="add-job-page__actions">
+            <button type="button" className="add-job-page__btn add-job-page__btn--cancel"
+              onClick={() => navigate("/")}>
               ← Cancel
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!isValid || loading}
-              style={{
-                flex: 2, padding: "11px 0", borderRadius: 9,
-                cursor: isValid && !loading ? "pointer" : "not-allowed",
-                background: isValid && !loading ? "#1d4ed8" : "#e5e7eb",
-                border: "none",
-                color: isValid && !loading ? "#fff" : "#9ca3af",
-                fontSize: 14, fontWeight: 700,
-              }}
-            >
+            <button type="submit" className="add-job-page__btn add-job-page__btn--submit"
+              disabled={!isValid || loading}>
               {loading ? "Saving..." : "Add Job"}
             </button>
           </div>
 
-        </div>
+        </form>
       </div>
     </div>
   );
 }
+
+export default AddJobPage;

@@ -1,11 +1,11 @@
-// ─────────────────────────────────────────────
-//  pages/RegisterPage.jsx
-// ─────────────────────────────────────────────
-
+// src/pages/RegisterPage.jsx
 import { useState } from "react";
-import { registerUser } from "../services/api";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
+function RegisterPage() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "", username: "", email: "", password: "", confirmPassword: "",
   });
@@ -13,53 +13,49 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
   const [loading,  setLoading]  = useState(false);
   const [showPass, setShowPass] = useState(false);
 
-  function handleChange(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleRegister() {
-    // Validation
+  async function handleSubmit(e) {
+    e.preventDefault();
+
     if (!form.name.trim() || !form.username.trim() || !form.email.trim() || !form.password.trim()) {
-      setError("All fields are required.");
-      return;
+      setError("All fields are required."); return;
     }
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
+      setError("Password must be at least 6 characters."); return;
     }
     if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      setError("Passwords do not match."); return;
     }
     if (!form.email.includes("@")) {
-      setError("Enter a valid email address.");
-      return;
+      setError("Enter a valid email."); return;
     }
 
     setLoading(true);
     setError("");
 
     try {
-      const newUser = await registerUser({
+      // Check if username taken
+      const check = await api.get(`/users?username=${form.username.trim().toLowerCase()}`);
+      if (check.data.length > 0) {
+        setError("Username already taken."); setLoading(false); return;
+      }
+
+      await api.post("/users", {
         name:     form.name.trim(),
         username: form.username.trim().toLowerCase(),
         email:    form.email.trim().toLowerCase(),
         password: form.password,
       });
 
-      // Auto-login — remove password before passing up
-      const { password: _removed, ...safeUser } = newUser;
-      onRegisterSuccess(safeUser);
-
+      navigate("/login");
     } catch (err) {
-      setError(err.message || "Cannot connect to server.");
+      setError("Cannot connect to server.");
     }
 
     setLoading(false);
-  }
-
-  function handleKeyDown(e) {
-    if (e.key === "Enter") handleRegister();
   }
 
   const inputStyle = {
@@ -69,148 +65,88 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }) {
     background: "#f9fafb", color: "#111827", outline: "none",
   };
 
-  const labelStyle = {
-    fontSize: 12, fontWeight: 600, color: "#6b7280",
-    display: "block", marginBottom: 5,
-  };
-
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f1f5f9",
-      display: "flex", alignItems: "center",
-      justifyContent: "center", padding: 20,
-      fontFamily: "'Segoe UI', sans-serif",
-    }}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
+    <div className="auth-page">
+      <div className="auth-page__wrapper">
 
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>💼</div>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#0f172a" }}>JobTrackr</h1>
-          <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>
-            Create your account
-          </p>
+        <div className="auth-page__logo">
+          <div className="auth-page__logo-icon">💼</div>
+          <h1 className="auth-page__logo-title">JobTrackr</h1>
+          <p className="auth-page__logo-sub">Create your account</p>
         </div>
 
-        {/* Card */}
-        <div style={{
-          background: "#fff", border: "1px solid #e2e8f0",
-          borderRadius: 16, padding: 28,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-        }}>
-          <h2 style={{ margin: "0 0 22px", fontSize: 17, fontWeight: 700, color: "#111827" }}>
-            Register
-          </h2>
+        <div className="auth-page__card auth-page__card--register">
+          <h2 className="auth-page__card-title">Register</h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+          <form onSubmit={handleSubmit} className="auth-page__fields auth-page__fields--register">
 
-            {/* Full Name */}
             <div>
-              <label style={labelStyle}>FULL NAME</label>
-              <input
-                style={inputStyle} type="text"
-                value={form.name} onChange={(e) => handleChange("name", e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
+              <label className="auth-page__label auth-page__label--register">FULL NAME</label>
+              <input style={inputStyle} type="text" name="name"
+                value={form.name} onChange={handleChange} />
             </div>
 
-            {/* Username */}
             <div>
-              <label style={labelStyle}>USERNAME</label>
-              <input
-                style={inputStyle} type="text"
-                value={form.username} onChange={(e) => handleChange("username", e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
+              <label className="auth-page__label auth-page__label--register">USERNAME</label>
+              <input style={inputStyle} type="text" name="username"
+                value={form.username} onChange={handleChange} />
             </div>
 
-            {/* Email */}
             <div>
-              <label style={labelStyle}>EMAIL</label>
-              <input
-                style={inputStyle} type="email"
-                value={form.email} onChange={(e) => handleChange("email", e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
+              <label className="auth-page__label auth-page__label--register">EMAIL</label>
+              <input style={inputStyle} type="email" name="email"
+                value={form.email} onChange={handleChange} />
             </div>
 
-            {/* Password */}
             <div>
-              <label style={labelStyle}>PASSWORD</label>
-              <div style={{ position: "relative" }}>
+              <label className="auth-page__label auth-page__label--register">PASSWORD</label>
+              <div className="auth-page__pass-wrapper">
                 <input
                   style={{ ...inputStyle, paddingRight: 44 }}
                   type={showPass ? "text" : "password"}
-                  value={form.password} onChange={(e) => handleChange("password", e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  name="password"
+                  value={form.password} onChange={handleChange}
                 />
-                <button onClick={() => setShowPass((p) => !p)} style={{
-                  position: "absolute", right: 11, top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none", border: "none",
-                  cursor: "pointer", fontSize: 16, color: "#9ca3af",
-                }}>
+                <button type="button" className="auth-page__pass-toggle"
+                  onClick={() => setShowPass((p) => !p)}>
                   {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
-              <label style={labelStyle}>CONFIRM PASSWORD</label>
+              <label className="auth-page__label auth-page__label--register">CONFIRM PASSWORD</label>
               <input
                 style={{
                   ...inputStyle,
                   borderColor: form.confirmPassword && form.confirmPassword !== form.password
-                    ? "#fca5a5" : "#d1d5db",
+                    ? "#fca5a5" : "#d1d5db"
                 }}
-                type="password"
-                value={form.confirmPassword}
-                onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                onKeyDown={handleKeyDown}
+                type="password" name="confirmPassword"
+                value={form.confirmPassword} onChange={handleChange}
               />
               {form.confirmPassword && (
-                <p style={{
-                  margin: "4px 0 0", fontSize: 11,
-                  color: form.confirmPassword === form.password ? "#16a34a" : "#dc2626",
-                }}>
+                <p className={`auth-page__password-match ${form.confirmPassword === form.password ? "auth-page__password-match--ok" : "auth-page__password-match--fail"}`}>
                   {form.confirmPassword === form.password ? "✓ Passwords match" : "✗ Do not match"}
                 </p>
               )}
             </div>
 
-            {/* Error */}
-            {error && (
-              <div style={{
-                background: "#fef2f2", border: "1px solid #fecaca",
-                borderRadius: 8, padding: "9px 13px",
-                fontSize: 13, color: "#dc2626",
-              }}>
-                {error}
-              </div>
-            )}
+            {error && <div className="auth-page__error">{error}</div>}
 
-            {/* Register button */}
-            <button onClick={handleRegister} disabled={loading} style={{
-              width: "100%", padding: "12px 0",
-              background: loading ? "#86efac" : "#16a34a",
-              color: "#fff", border: "none", borderRadius: 9,
-              fontSize: 15, fontWeight: 700,
-              cursor: loading ? "not-allowed" : "pointer", marginTop: 4,
-            }}>
+            <button type="submit" className="auth-page__btn auth-page__btn--register" disabled={loading}>
               {loading ? "Creating account..." : "Create Account ✓"}
             </button>
 
-            {/* Go to Login */}
-            <p style={{ textAlign: "center", fontSize: 13, color: "#6b7280", margin: 0 }}>
+            <p className="auth-page__footer auth-page__footer--register">
               Already have an account?{" "}
-              <span onClick={onGoLogin} style={{ color: "#1d4ed8", fontWeight: 600, cursor: "pointer" }}>
-                Login here
-              </span>
+              <a href="/login" className="auth-page__footer-link">Login here</a>
             </p>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   );
 }
+
+export default RegisterPage;

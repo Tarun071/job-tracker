@@ -10,7 +10,7 @@ const Favorites = () => {
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
       <h2 style={{ color: "#e2e8f0", marginBottom: "1.5rem" }}>
-        ★ Favorite Jobs
+        Favorite Jobs
         <span
           style={{
             marginLeft: "0.6rem",

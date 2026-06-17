@@ -3,16 +3,15 @@
 // ─────────────────────────────────────────────
 
 import { useState } from "react";
-import StatsBar    from "../components/StatsBar";
-import FilterBar   from "../components/FilterBar";
-import JobCard     from "../components/JobCard";
+import StatsBar  from "../components/StatsBar";
+import FilterBar from "../components/FilterBar";
+import JobCard   from "../components/JobCard";
 
 export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
-  const [search, setSearch]             = useState("");
+  const [search,       setSearch]       = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
-  const [sortBy, setSortBy]             = useState("newest");   // ← NEW
+  const [sortBy,       setSortBy]       = useState("newest");
 
-  // ── Sort logic ──
   function getSortedJobs(jobList) {
     const sorted = [...jobList];
     if (sortBy === "newest")  return sorted.sort((a, b) => new Date(b.dateApplied) - new Date(a.dateApplied));
@@ -36,24 +35,20 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
   );
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px", backgroundColor: "#111827" }}>
+    <div className="home-page">
 
-      {/* ── Page heading ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+      {/* Header */}
+      <div className="home-page__header">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#111827" }}>
-            Dashboard
-          </h1>
-          <p style={{ margin: "5px 0 0", fontSize: 13, color: "#6b7280" }}>
-            {jobs.length} applications
-          </p>
+          <h1 className="home-page__title">Dashboard</h1>
+          <p className="home-page__count">{jobs.length} applications</p>
         </div>
       </div>
 
-      {/* ── Stats bar ── */}
+      {/* Stats */}
       <StatsBar jobs={jobs} />
 
-      {/* ── Search + Filter ── */}
+      {/* Filter */}
       <FilterBar
         search={search}
         onSearch={setSearch}
@@ -61,21 +56,12 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
         onFilter={setActiveFilter}
       />
 
-      {/* ── Sort dropdown ── */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+      {/* Sort */}
+      <div className="home-page__sort">
         <select
+          className="home-page__sort-select"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          style={{
-            background: "#1e2a3a",
-            color: "#94a3b8",
-            border: "1px solid #2d3f55",
-            borderRadius: 8,
-            padding: "7px 12px",
-            fontSize: 13,
-            cursor: "pointer",
-            outline: "none",
-          }}
         >
           <option value="newest">📅 Newest First</option>
           <option value="oldest">📅 Oldest First</option>
@@ -84,33 +70,17 @@ export default function HomePage({ jobs, onEdit, onDelete, onNavigate }) {
         </select>
       </div>
 
-      {/* ── Job cards grid ── */}
+      {/* Job cards */}
       {filteredJobs.length === 0 ? (
-        <div style={{
-          textAlign: "center",
-          padding: "52px 20px",
-          color: "#9ca3af",
-          fontSize: 14,
-          border: "1.5px dashed #e5e7eb",
-          borderRadius: 14,
-        }}>
+        <div className="home-page__empty">
           {jobs.length === 0
-            ? "No applications yet — click \"+ Add Job\" to get started!"
+            ? 'No applications yet — click "+ Add Job" to get started!'
             : "No results match your search or filter."}
         </div>
       ) : (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))",
-          gap: 14,
-        }}>
+        <div className="home-page__grid">
           {filteredJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+            <JobCard key={job.id} job={job} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       )}
